@@ -1,16 +1,16 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowLeft, Download, Search, GraduationCap, User, Calendar, DollarSign, CreditCard, FileText, Filter, RefreshCw, TrendingUp } from 'lucide-react';
+import { Download, Search, GraduationCap, User, Calendar, DollarSign, CreditCard, FileText, Filter, RefreshCw, TrendingUp } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import AdminLayout from '@/components/admin/AdminLayout';
 
 interface StudentInfo {
   name: string;
@@ -54,7 +54,6 @@ interface Enrollment {
 }
 
 export default function EnrollmentsPage() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
   const [filteredEnrollments, setFilteredEnrollments] = useState<Enrollment[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -67,7 +66,6 @@ export default function EnrollmentsPage() {
     thisMonth: 0,
     thisYear: 0
   });
-  const router = useRouter();
 
   // Fetch enrollments from API
   const fetchEnrollments = useCallback(async (search = '', course = 'all') => {
@@ -99,14 +97,8 @@ export default function EnrollmentsPage() {
   }, []);
 
   useEffect(() => {
-    const auth = localStorage.getItem('adminAuth');
-    if (auth === 'true') {
-      setIsAuthenticated(true);
-      fetchEnrollments();
-    } else {
-      router.push('/admin/login');
-    }
-  }, [router, fetchEnrollments]);
+    fetchEnrollments();
+  }, [fetchEnrollments]);
 
   const calculatePaymentStats = (enrollments: Enrollment[]) => {
     const now = new Date();
@@ -186,6 +178,7 @@ export default function EnrollmentsPage() {
       'Enrollment Date': new Date(enrollment.enrollmentDate).toLocaleDateString()
     }));
 
+
     const ws = XLSX.utils.json_to_sheet(exportData);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Enrollments');
@@ -204,42 +197,9 @@ export default function EnrollmentsPage() {
     }
   };
 
-  if (!isAuthenticated) {
-    return <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
-      <div className="text-gray-600">Loading...</div>
-    </div>;
-  }
-
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-        <header className="bg-white/80 backdrop-blur-xl shadow-sm border-b border-gray-200/50 sticky top-0 z-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              <div className="flex items-center space-x-4">
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => router.push('/admin/dashboard')}
-                  className="flex items-center space-x-2 hover:bg-blue-50"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  <span>Back</span>
-                </Button>
-                <div className="h-6 w-px bg-gray-300" />
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg shadow-lg">
-                    <GraduationCap className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    <h1 className="text-xl font-bold text-gray-800">Enrollment Management</h1>
-                    <p className="text-sm text-gray-500 hidden sm:block">Manage course enrollments</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </header>
+      <AdminLayout>
         <div className="flex items-center justify-center h-96">
           <div className="text-center">
             <div className="relative">
@@ -249,40 +209,13 @@ export default function EnrollmentsPage() {
             <p className="mt-6 text-gray-600 font-medium">Loading enrollments...</p>
           </div>
         </div>
-      </div>
+      </AdminLayout>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-        <header className="bg-white/80 backdrop-blur-xl shadow-sm border-b border-gray-200/50 sticky top-0 z-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              <div className="flex items-center space-x-4">
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => router.push('/admin/dashboard')}
-                  className="flex items-center space-x-2 hover:bg-blue-50"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  <span>Back</span>
-                </Button>
-                <div className="h-6 w-px bg-gray-300" />
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg shadow-lg">
-                    <GraduationCap className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    <h1 className="text-xl font-bold text-gray-800">Enrollment Management</h1>
-                    <p className="text-sm text-gray-500 hidden sm:block">Manage course enrollments</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </header>
+      <AdminLayout>
         <div className="flex items-center justify-center h-96">
           <div className="text-center max-w-md mx-auto px-4">
             <div className="text-red-500 text-6xl mb-6">⚠️</div>
@@ -297,264 +230,235 @@ export default function EnrollmentsPage() {
             </Button>
           </div>
         </div>
-      </div>
+      </AdminLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-xl shadow-sm border-b border-gray-200/50 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-4">
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => router.push('/admin/dashboard')}
-                className="flex items-center space-x-2 hover:bg-blue-50"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                <span>Back</span>
-              </Button>
-              <div className="h-6 w-px bg-gray-300" />
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg shadow-lg">
-                  <GraduationCap className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-xl font-bold text-gray-800">Enrollment Management</h1>
-                  <p className="text-sm text-gray-500 hidden sm:block">Manage course enrollments</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-          <Card className="bg-gradient-to-br from-green-50 to-emerald-100 border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-green-700">Total Enrollments</p>
-                  <p className="text-2xl font-bold text-green-900">{enrollments.length}</p>
-                </div>
-                <div className="p-2 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg">
-                  <GraduationCap className="h-5 w-5 text-white" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-gradient-to-br from-blue-50 to-cyan-100 border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-blue-700">Today's Revenue</p>
-                  <p className="text-xl font-bold text-blue-900">₹{paymentStats.today.toLocaleString()}</p>
-                </div>
-                <div className="p-2 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-lg">
-                  <DollarSign className="h-5 w-5 text-white" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-purple-50 to-pink-100 border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-purple-700">This Week</p>
-                  <p className="text-xl font-bold text-purple-900">₹{paymentStats.thisWeek.toLocaleString()}</p>
-                </div>
-                <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-600 rounded-lg">
-                  <TrendingUp className="h-5 w-5 text-white" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-orange-50 to-red-100 border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-orange-700">This Month</p>
-                  <p className="text-xl font-bold text-orange-900">₹{paymentStats.thisMonth.toLocaleString()}</p>
-                </div>
-                <div className="p-2 bg-gradient-to-r from-orange-500 to-red-600 rounded-lg">
-                  <Calendar className="h-5 w-5 text-white" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-indigo-50 to-purple-100 border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-indigo-700">This Year</p>
-                  <p className="text-xl font-bold text-indigo-900">₹{paymentStats.thisYear.toLocaleString()}</p>
-                </div>
-                <div className="p-2 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg">
-                  <DollarSign className="h-5 w-5 text-white" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-lg">
-          <CardHeader>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+    <AdminLayout>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+        <Card className="bg-gradient-to-br from-green-50 to-emerald-100 border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-2xl font-bold text-gray-800">Course Enrollments</CardTitle>
-                <CardDescription className="text-gray-600">
-                  Manage and track all course enrollments ({filteredEnrollments.length} total)
-                </CardDescription>
+                <p className="text-sm font-semibold text-green-700">Total Enrollments</p>
+                <p className="text-2xl font-bold text-green-900">{enrollments.length}</p>
               </div>
-              <Button 
-                onClick={exportToExcel} 
-                className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-lg"
-              >
-                <Download className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Export to Excel</span>
-                <span className="sm:hidden">Export</span>
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {/* Search and Filter */}
-            <div className="flex flex-col sm:flex-row gap-4 mb-6">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Search enrollments by student name, email, course, or enrollment ID..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 border-2 border-gray-200 focus:border-green-400 rounded-xl transition-all duration-200"
-                />
-              </div>
-              <div className="flex items-center space-x-2 min-w-[200px]">
-                <Filter className="h-4 w-4 text-gray-400" />
-                <Select value={selectedCourse} onValueChange={setSelectedCourse}>
-                  <SelectTrigger className="border-2 border-gray-200 focus:border-green-400 rounded-xl">
-                    <SelectValue placeholder="Filter by course" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Courses</SelectItem>
-                    {uniqueCourses.map((course) => (
-                      <SelectItem key={course} value={course}>
-                        {course}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="p-2 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg">
+                <GraduationCap className="h-5 w-5 text-white" />
               </div>
             </div>
-
-            {/* Table */}
-            <div className="rounded-xl border-2 border-gray-200 overflow-hidden bg-white">
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-gradient-to-r from-gray-50 to-gray-100">
-                      <TableHead className="font-bold text-gray-700">Enrollment ID</TableHead>
-                      <TableHead className="font-bold text-gray-700">Student Info</TableHead>
-                      <TableHead className="font-bold text-gray-700">Course Details</TableHead>
-                      <TableHead className="font-bold text-gray-700">Payment Info</TableHead>
-                      <TableHead className="font-bold text-gray-700">Invoice Info</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredEnrollments.map((enrollment) => (
-                      <TableRow key={enrollment.enrollmentId} className="hover:bg-blue-50/50 transition-colors duration-200">
-                        <TableCell>
-                          <Badge variant="outline" className="font-mono text-sm bg-blue-50 text-blue-700 border-blue-200">
-                            {enrollment.enrollmentId}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="space-y-2">
-                            <div className="flex items-center">
-                              <User className="h-4 w-4 text-blue-500 mr-2" />
-                              <span className="font-semibold text-gray-900">{enrollment.studentInfo.name}</span>
-                            </div>
-                            <div className="text-sm text-gray-600 space-y-1">
-                              <div>{enrollment.studentInfo.email}</div>
-                              <div>{enrollment.studentInfo.phone}</div>
-                              <div className="truncate max-w-xs" title={enrollment.studentInfo.address}>
-                                {enrollment.studentInfo.address}
-                              </div>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="space-y-2">
-                            <div className="font-semibold text-gray-900">{enrollment.courseInfo.title}</div>
-                            <div className="flex flex-wrap gap-1">
-                              <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
-                                {enrollment.courseInfo.level}
-                              </Badge>
-                            </div>
-                            <div className="text-sm text-gray-600 space-y-1">
-                              <div>Fee: {enrollment.courseInfo.fee}</div>
-                              <div>Duration: {enrollment.courseInfo.duration}</div>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="space-y-2">
-                            <Badge className={`${getPaymentStatusColor(enrollment.paymentInfo.paymentStatus)} font-semibold`}>
-                              {enrollment.paymentInfo.paymentStatus}
-                            </Badge>
-                            <div className="text-sm text-gray-600 space-y-1">
-                              <div className="flex items-center">
-                                <DollarSign className="h-3 w-3 mr-1 text-green-500" />
-                                <span className="font-semibold">₹{enrollment.paymentInfo.amount}</span>
-                              </div>
-                              <div className="flex items-center">
-                                <CreditCard className="h-3 w-3 mr-1 text-blue-500" />
-                                <span className="font-mono text-xs">{enrollment.paymentInfo.transactionId}</span>
-                              </div>
-                              <div className="flex items-center">
-                                <Calendar className="h-3 w-3 mr-1 text-purple-500" />
-                                <span className="text-xs">{new Date(enrollment.paymentInfo.paymentDate).toLocaleDateString()}</span>
-                              </div>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="space-y-1 text-sm text-gray-600">
-                            <div className="flex items-center">
-                              <FileText className="h-3 w-3 mr-1 text-orange-500" />
-                              <span className="font-mono text-xs">{enrollment.invoiceInfo.invoiceNumber}</span>
-                            </div>
-                            <div>Enrolled: {new Date(enrollment.enrollmentDate).toLocaleDateString()}</div>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </div>
-
-            {filteredEnrollments.length === 0 && (
-              <div className="text-center py-12">
-                <GraduationCap className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">No enrollments found</h3>
-                <p className="text-gray-600">
-                  {searchTerm ? 'Try adjusting your search terms.' : 'No course enrollments yet.'}
-                </p>
-              </div>
-            )}
           </CardContent>
         </Card>
-      </main>
-    </div>
+        
+        <Card className="bg-gradient-to-br from-blue-50 to-cyan-100 border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-blue-700">Today's Revenue</p>
+                <p className="text-xl font-bold text-blue-900">₹{paymentStats.today.toLocaleString()}</p>
+              </div>
+              <div className="p-2 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-lg">
+                <DollarSign className="h-5 w-5 text-white" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-purple-50 to-pink-100 border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-purple-700">This Week</p>
+                <p className="text-xl font-bold text-purple-900">₹{paymentStats.thisWeek.toLocaleString()}</p>
+              </div>
+              <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-600 rounded-lg">
+                <TrendingUp className="h-5 w-5 text-white" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-orange-50 to-red-100 border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-orange-700">This Month</p>
+                <p className="text-xl font-bold text-orange-900">₹{paymentStats.thisMonth.toLocaleString()}</p>
+              </div>
+              <div className="p-2 bg-gradient-to-r from-orange-500 to-red-600 rounded-lg">
+                <Calendar className="h-5 w-5 text-white" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-indigo-50 to-purple-100 border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-indigo-700">This Year</p>
+                <p className="text-xl font-bold text-indigo-900">₹{paymentStats.thisYear.toLocaleString()}</p>
+              </div>
+              <div className="p-2 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg">
+                <DollarSign className="h-5 w-5 text-white" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-lg">
+        <CardHeader>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+            <div>
+              <CardTitle className="text-2xl font-bold text-gray-800">Course Enrollments</CardTitle>
+              <CardDescription className="text-gray-600">
+                Manage and track all course enrollments ({filteredEnrollments.length} total)
+              </CardDescription>
+            </div>
+            <Button 
+              onClick={exportToExcel} 
+              className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-lg"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Export to Excel</span>
+              <span className="sm:hidden">Export</span>
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {/* Search and Filter */}
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Search enrollments by student name, email, course, or enrollment ID..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 border-2 border-gray-200 focus:border-green-400 rounded-xl transition-all duration-200"
+              />
+            </div>
+            <div className="flex items-center space-x-2 min-w-[200px]">
+              <Filter className="h-4 w-4 text-gray-400" />
+              <Select value={selectedCourse} onValueChange={setSelectedCourse}>
+                <SelectTrigger className="border-2 border-gray-200 focus:border-green-400 rounded-xl">
+                  <SelectValue placeholder="Filter by course" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Courses</SelectItem>
+                  {uniqueCourses.map((course) => (
+                    <SelectItem key={course} value={course}>
+                      {course}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Table */}
+          <div className="rounded-xl border-2 border-gray-200 overflow-hidden bg-white">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-gradient-to-r from-gray-50 to-gray-100">
+                    <TableHead className="font-bold text-gray-700">Enrollment ID</TableHead>
+                    <TableHead className="font-bold text-gray-700">Student Info</TableHead>
+                    <TableHead className="font-bold text-gray-700">Course Details</TableHead>
+                    <TableHead className="font-bold text-gray-700">Payment Info</TableHead>
+                    <TableHead className="font-bold text-gray-700">Invoice Info</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredEnrollments.map((enrollment) => (
+                    <TableRow key={enrollment.enrollmentId} className="hover:bg-blue-50/50 transition-colors duration-200">
+                      <TableCell>
+                        <Badge variant="outline" className="font-mono text-sm bg-blue-50 text-blue-700 border-blue-200">
+                          {enrollment.enrollmentId}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="space-y-2">
+                          <div className="flex items-center">
+                            <User className="h-4 w-4 text-blue-500 mr-2" />
+                            <span className="font-semibold text-gray-900">{enrollment.studentInfo.name}</span>
+                          </div>
+                          <div className="text-sm text-gray-600 space-y-1">
+                            <div>{enrollment.studentInfo.email}</div>
+                            <div>{enrollment.studentInfo.phone}</div>
+                            <div className="truncate max-w-xs" title={enrollment.studentInfo.address}>
+                              {enrollment.studentInfo.address}
+                            </div>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="space-y-2">
+                          <div className="font-semibold text-gray-900">{enrollment.courseInfo.title}</div>
+  
+                          <div className="flex flex-wrap gap-1">
+                            <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
+                              {enrollment.courseInfo.level}
+                            </Badge>
+                          </div>
+                          <div className="text-sm text-gray-600 space-y-1">
+                            <div>Fee: {enrollment.courseInfo.fee}</div>
+                            <div>Duration: {enrollment.courseInfo.duration}</div>
+                  
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="space-y-2">
+                          <Badge className={`${getPaymentStatusColor(enrollment.paymentInfo.paymentStatus)} font-semibold`}>
+                            {enrollment.paymentInfo.paymentStatus}
+                          </Badge>
+                          <div className="text-sm text-gray-600 space-y-1">
+                            <div className="flex items-center">
+                              <DollarSign className="h-3 w-3 mr-1 text-green-500" />
+                              <span className="font-semibold">₹{enrollment.paymentInfo.amount}</span>
+                            </div>
+                            <div className="flex items-center">
+                              <CreditCard className="h-3 w-3 mr-1 text-blue-500" />
+                              <span className="font-mono text-xs">{enrollment.paymentInfo.transactionId}</span>
+                            </div>
+                            <div className="flex items-center">
+                              <Calendar className="h-3 w-3 mr-1 text-purple-500" />
+                              <span className="text-xs">{new Date(enrollment.paymentInfo.paymentDate).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="space-y-1 text-sm text-gray-600">
+                          <div className="flex items-center">
+                            <FileText className="h-3 w-3 mr-1 text-orange-500" />
+                            <span className="font-mono text-xs">{enrollment.invoiceInfo.invoiceNumber}</span>
+                          </div>
+                          <div>Invoice: {enrollment.invoiceInfo.invoiceDate}</div>
+                          <div>Enrolled: {new Date(enrollment.enrollmentDate).toLocaleDateString()}</div>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+
+          {filteredEnrollments.length === 0 && (
+            <div className="text-center py-12">
+              <GraduationCap className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">No enrollments found</h3>
+              <p className="text-gray-600">
+                {searchTerm ? 'Try adjusting your search terms.' : 'No course enrollments yet.'}
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </AdminLayout>
   );
 }
