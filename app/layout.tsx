@@ -6,7 +6,7 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'Kalakar Art Academy - Admin',
-  description: 'Admin Panel',
+  description: 'Admin Panel for Kalakar Art Academy',
 };
 
 export default function RootLayout({
@@ -16,6 +16,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="icon" type="image/png" href="/protection.png" />
+        <link rel="shortcut icon" type="image/png" href="/protection.png" />
+      </head>
       <body className={inter.className}>{children}</body>
     </html>
   );
