@@ -167,7 +167,6 @@ export default function AdminDashboard() {
           </div>
           <div>
             <h2 className="text-xl md:text-2xl font-bold text-gray-900 lg:text-3xl">Welcome back, Admin</h2>
-            <p className="text-gray-600 mt-1 text-sm lg:text-base">Here's what's happening with your data today.</p>
           </div>
         </div>
       </div>
